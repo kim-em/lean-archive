@@ -92,7 +92,7 @@ package «lean-archive» where
   moreLinkArgs := run_io do return (← zlibLinkFlags) ++ (← ltoLinkFlags)
   testDriver := "test"
 
-require «lean-zip» from git "https://github.com/kim-em/lean-zip" @ "17138e710af2ad8639f4cab1cc68693c998d9b4e"
+require «lean-zip» from git "https://github.com/kim-em/lean-zip" @ "86fde8b18886f97d2c77dab2ba6d033bbbdfbb3a"
 
 require «lean-zlib» from git "https://github.com/kim-em/lean-zlib" @ "1a79d2d7713e55d98084f4ed92fd44263aab133c"
 
