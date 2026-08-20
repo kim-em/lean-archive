@@ -101,7 +101,7 @@ regression tests work against — it is intentionally concrete
 (parameter, default, and semantics of `0`) so callers and tests can
 reason about behaviour without re-reading the source. The FFI and
 native codec entry points these forward to carry their own caps,
-documented in lean-zlib's and lean-zip's `SECURITY.md`/docstrings.
+documented in lean-zlib's `SECURITY.md` and lean-zip's decoder docstrings.
 
 | Entry point | Parameter | Default | Semantics of 0 | Notes |
 |---|---|---|---|---|

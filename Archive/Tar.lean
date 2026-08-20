@@ -140,7 +140,7 @@ private def hdrPrefix   := (345, 155)
       -- truncates at NUL and the file lands at the short prefix while
       -- `Tar.list` callers see the full embedded string — a classic
       -- parser-differential / filesystem-truncation smuggle vector,
-      -- sibling to the ZIP CD name NUL guard at Zip/Archive.lean:630.
+      -- sibling to the ZIP CD name NUL guard at Archive/Zip.lean:630.
       if let (some key, some value) := (String.fromUTF8? keyBytes, String.fromUTF8? valueBytes) then
         if (keyBytes.findIdx? (· == 0)).isNone
             && (valueBytes.findIdx? (· == 0)).isNone then
@@ -245,7 +245,7 @@ def defaultMaxHeaderSize : Nat := 8 * 1024 * 1024
     happens; on overflow the function throws `IO.userError` containing
     the substring `"exceeds maximum header size"`. The payload-bearing
     `Tar.extract` regular-file path uses its own open-coded loop and is
-    not affected by this cap (see `Zip/Tar.lean` regular-file branch). -/
+    not affected by this cap (see `Archive/Tar.lean` regular-file branch). -/
 private partial def readEntryData (input : IO.FS.Stream) (size : Nat)
     (maxHeaderSize : Nat := defaultMaxHeaderSize) : IO ByteArray := do
   if size > maxHeaderSize then
@@ -272,7 +272,7 @@ private partial def readEntryData (input : IO.FS.Stream) (size : Nat)
 
 /-- Thin bounded-length `readExact`-style helper over `IO.FS.Stream`, adding the
     `length.toUSize.toNat = length` addressable-range guard that the ZIP
-    `readExact` already applies at `Zip/Archive.lean` but the Tar `readExact`
+    `readExact` already applies at `Archive/Zip.lean` but the Tar `readExact`
     does not. On the addressable-range violation throws `IO.userError` with
     substring `"tar: {what} size {n} exceeds addressable range"`; on short read
     throws with the message produced by the caller-handled EOF path (the
@@ -503,7 +503,7 @@ def parseHeader (block : ByteArray) : IO (Option Entry) := do
   -- a trust decision sees only the truncated prefix while peer parsers
   -- preserve the full bytes), but neither itself reaches the filesystem
   -- in `Tar.extract`. Sibling guards: the ZIP CD-parse name guard at
-  -- `Zip/Archive.lean` (PR #1831, *"CD entry name contains NUL byte"*);
+  -- `Archive/Zip.lean` (PR #1831, *"CD entry name contains NUL byte"*);
   -- the GNU long-name / long-link guards in `forEntries` (PR #1865,
   -- *"GNU long-name contains NUL byte"* / *"GNU long-link contains NUL
   -- byte"*); and the PAX `keyBytes` / `valueBytes` silent-skip in

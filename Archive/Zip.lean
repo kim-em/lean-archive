@@ -320,7 +320,7 @@ private def findEndOfCentralDir (data : ByteArray) (baseOffset : Nat := 0)
             -- at line 304 only bounds the record against `data.size`
             -- and therefore remains in place as defense-in-depth but is
             -- strictly weaker than this layout invariant.  Writer-side
-            -- at `Zip/Archive.lean:142` emits the three records
+            -- at `Archive/Zip.lean:142` emits the three records
             -- contiguously in APPNOTE order, so the invariant holds
             -- trivially for every lean-zip-produced archive.
             -- Archive-level macro sibling: `cdOffset + cdSize ≤ eocdPos`
@@ -336,7 +336,7 @@ private def findEndOfCentralDir (data : ByteArray) (baseOffset : Nat := 0)
             -- equal `SizeOfFixedFields + SizeOfVariableData - 12`, i.e.
             -- `44` (56 fixed bytes minus the 12 bytes of signature +
             -- size field).  Writer-side confirmation:
-            -- `Zip/Archive.lean:152` hard-codes `44`.  A non-44 value is
+            -- `Archive/Zip.lean:152` hard-codes `44`.  A non-44 value is
             -- a parser-differential smuggling vector: lean-zip uses the
             -- fixed 56-byte layout, while a stricter parser trusts the
             -- self-declared length and reads past or short of that.
@@ -352,7 +352,7 @@ private def findEndOfCentralDir (data : ByteArray) (baseOffset : Nat := 0)
             -- that lean-zip does not support or a crafted smuggle targeting
             -- the gap between parsers that validate the field and parsers
             -- that don't.  Writer-side at
-            -- `Zip/Archive.lean:153` hard-codes `3 * 256 + 45 = 0x032D`, so
+            -- `Archive/Zip.lean:153` hard-codes `3 * 256 + 45 = 0x032D`, so
             -- `versionMadeBy &&& 0xFF = 45 ≤ 63` holds trivially for every
             -- lean-zip-produced archive.  Only the lower byte is checked:
             -- the upper byte (host OS code, APPNOTE §4.4.2.2) is
@@ -369,7 +369,7 @@ private def findEndOfCentralDir (data : ByteArray) (baseOffset : Nat := 0)
             -- beyond the defined spec — either attacker-smuggled
             -- beyond-spec metadata or a parser-differential smuggling
             -- vector against strict readers.  Writer-side at
-            -- `Zip/Archive.lean:154` hard-codes `45` (EOCD64 requires
+            -- `Archive/Zip.lean:154` hard-codes `45` (EOCD64 requires
             -- ZIP64 support, §4.4.3.2), so `45 ≤ 63` holds trivially.
             -- Upper-bound sibling of the lower-bound `≥ 45` check
             -- (issue #1758); the two bounds close the EOCD64
@@ -515,7 +515,7 @@ private def parseCentralDir (data : ByteArray)
   -- EOCD disk-number sanity: lean-zip supports single-disk archives only.
   -- Writer-side confirmation: both fields are hard-coded to 0 (see the
   -- "disk number" comments at the ZIP64 and standard EOCD write sites
-  -- around Zip/Archive.lean:155 and :168). The reader rejects nonzero
+  -- around Archive/Zip.lean:155 and :168). The reader rejects nonzero
   -- values here — post-ZIP64-override — to close the cross-disk
   -- smuggling vector. The two fields are checked together and both
   -- values are reported to make attribution deterministic.
@@ -525,7 +525,7 @@ private def parseCentralDir (data : ByteArray)
   -- EOCD entry-count sanity: `numEntriesThisDisk` and `totalEntries` must
   -- agree on single-disk archives (the only shape lean-zip supports).
   -- Writer-side confirmation: both fields receive the same `numEntries`
-  -- at the EOCD/ZIP64 write sites (see Zip/Archive.lean:156-157 and
+  -- at the EOCD/ZIP64 write sites (see Archive/Zip.lean:156-157 and
   -- :170-171). Treat `declaredEntries` (post-ZIP64-override `totalEntries`)
   -- as authoritative and report `entriesThisDisk` as the disagreement,
   -- matching the direction of the sibling `totalEntries` check below.
@@ -565,7 +565,7 @@ private def parseCentralDir (data : ByteArray)
     -- path-safety predicate (which would otherwise catch the empty
     -- string via its empty-component rejection, but only if the
     -- decode succeeds). Writer-side at
-    -- [Zip/Archive.lean:84](/home/kim/lean-zip/Zip/Archive.lean:84)
+    -- Archive/Zip.lean:84
     -- and :110 inherits the invariant from caller-supplied
     -- `entry.path` (no emit-time enforcement); the CD-parse guard is
     -- read-side only. Sibling of PR #1831 (CD-entry name NUL-byte
@@ -584,7 +584,7 @@ private def parseCentralDir (data : ByteArray)
     -- `0`. Writer-side confirmation: the 46-byte CD header is
     -- `Binary.zeros`-initialised and `pos + 34` is never overwritten (see
     -- the "disk number start (34)" comment at the writer site around
-    -- Zip/Archive.lean:131). Reject early — this is a metadata-only
+    -- Archive/Zip.lean:131). Reject early — this is a metadata-only
     -- dimension and a parser-differential smuggling vector. Mirrors the
     -- archive-level EOCD disk-number check above.
     let diskNumberStart := Binary.readUInt16LE data (pos + 34)
@@ -597,7 +597,7 @@ private def parseCentralDir (data : ByteArray)
     -- version 1.0". lean-zip's writer emits zero here (the 46-byte CD
     -- header is `Binary.zeros`-initialised and the writer never
     -- overwrites `pos + 36` — see the "internal attrs (36)" comment at
-    -- the writer site around Zip/Archive.lean:131). Info-ZIP legitimately
+    -- the writer site around Archive/Zip.lean:131). Info-ZIP legitimately
     -- sets bit 0 on apparent text files (interop checked against
     -- `testdata/zip/interop/`: go-unix, go-test, go-crc32 all use
     -- `0x0000` or `0x0001`), so preserve bit 0 and reject any reserved
@@ -626,7 +626,7 @@ private def parseCentralDir (data : ByteArray)
     -- NUL today. Guard on the raw `ByteArray` before UTF-8 decode so the
     -- error message never re-introduces NUL into logs, and so both the
     -- UTF-8 and Latin-1 decode branches are closed uniformly. Writer-side
-    -- at Zip/Archive.lean:84 and :110 inherits the invariant from
+    -- at Archive/Zip.lean:84 and :110 inherits the invariant from
     -- caller-supplied `entry.path` (no enforcement at emit time).
     if (nameBytes.findIdx? (· == 0)).isSome then
       throw (IO.userError
@@ -653,11 +653,11 @@ private def parseCentralDir (data : ByteArray)
     -- the unsafe `path` verbatim — exposing the full smuggled form
     -- to callers who route on `entry.path` before any filesystem
     -- I/O. The extract-time `Binary.isPathSafe` calls in
-    -- `Archive.extract` (around Zip/Archive.lean:1269 and :1273)
+    -- `Archive.extract` (around Archive/Zip.lean:1269 and :1273)
     -- remain in place as defense-in-depth — unreachable for
     -- CD-parseable archives via the public API, but kept for the
     -- precedence-shift story. Mirror the trailing-slash carve-out
-    -- at Zip/Archive.lean:1267: directory entries end with `"/"`
+    -- at Archive/Zip.lean:1267: directory entries end with `"/"`
     -- and `isPathSafe` is checked on the slash-stripped form, so
     -- legitimate directory entries (including the empty-component
     -- case produced by stripping `"/"`) are not tripped. Run on the
@@ -665,7 +665,7 @@ private def parseCentralDir (data : ByteArray)
     -- semantics live at the path level, not the byte level; quote
     -- via `String.quote` so control bytes from the smuggled name
     -- never reach logs unescaped. Writer-side at
-    -- Zip/Archive.lean:84 and :110 inherits the invariant from
+    -- Archive/Zip.lean:84 and :110 inherits the invariant from
     -- caller-supplied `entry.path` (no emit-time enforcement); the
     -- CD-parse guard is read-side only. Sibling of PR #1831
     -- (CD-entry name NUL-byte rejection) on the same filename-
@@ -685,7 +685,7 @@ private def parseCentralDir (data : ByteArray)
     -- #1736) is one-sided and lets crafted archives with both sides
     -- claiming e.g. `51` (AES) through — this upper bound closes that
     -- gap. Writer-side confirmation: `writeLocalHeader` at
-    -- Zip/Archive.lean:90 and `writeCentralHeader` at :117 both emit
+    -- Archive/Zip.lean:90 and `writeCentralHeader` at :117 both emit
     -- `if z64 then 45 else 20`, so legitimate archives never exceed
     -- this threshold. Sibling of PR #1801 (method allowlist): both
     -- guards are independent dimensions of the CD-parse early-reject
@@ -705,7 +705,7 @@ private def parseCentralDir (data : ByteArray)
     -- fault to the CD-parse stage. Writer-side confirmation: `create`
     -- emits only `method == 0` or `method == 8`
     -- (see `let method : UInt16 := if useDeflate then 8 else 0` at
-    -- Zip/Archive.lean:192). The late `readEntryData` throw stays in
+    -- Archive/Zip.lean:192). The late `readEntryData` throw stays in
     -- place as defense-in-depth — unreachable for CD-parseable archives
     -- via the public API, but kept so the precedence-shift story is
     -- grep-discoverable.
@@ -718,7 +718,7 @@ private def parseCentralDir (data : ByteArray)
     -- "Reserved by PKWARE". Together these seven bits form the mask
     -- `0xD780` (`0b1101_0111_1000_0000`). lean-zip's writer emits the
     -- flag word literally as `0x0800` at
-    -- [Zip/Archive.lean:91](/home/kim/lean-zip/Zip/Archive.lean:91)
+    -- Archive/Zip.lean:91
     -- (LH) and :118 (CD), so the invariant `flags &&& 0xD780 == 0`
     -- holds for every lean-zip-produced archive independent of method,
     -- size, or ZIP64. A crafted archive with any of these bits set is
@@ -818,7 +818,7 @@ private def parseCentralDir (data : ByteArray)
     -- universal mathematical invariant — every correct writer
     -- (Info-ZIP, Go `archive/zip`, CPython `zipfile`, 7-Zip,
     -- lean-zip's own `create` at
-    -- [Zip/Archive.lean:189](/home/kim/lean-zip/Zip/Archive.lean:189)
+    -- Archive/Zip.lean:189
     -- which emits `Checksum.crc32 0 fileData`) obeys it. Crafted
     -- archives carrying `uncompSize = 0` alongside any nonzero CRC
     -- are structurally malformed and a parser-differential smuggle
@@ -828,7 +828,7 @@ private def parseCentralDir (data : ByteArray)
     -- parsers or CRC-cross-checking callers reject. Pre-PR,
     -- `Archive.extract` caught the mismatch only post-extraction
     -- via the `"CRC32 mismatch"` guard at
-    -- [Zip/Archive.lean:1224](/home/kim/lean-zip/Zip/Archive.lean:1224),
+    -- Archive/Zip.lean:1224,
     -- after any I/O work had been performed; `Archive.list` had no
     -- gate at all. Placed after the stored-method size invariant
     -- so `uncompSize : UInt64` is the resolved value (post-ZIP64)
@@ -856,7 +856,7 @@ private def parseCentralDir (data : ByteArray)
     -- impossible for a well-formed ZIP entry regardless of method — a
     -- universal mathematical invariant every correct writer (Info-ZIP,
     -- Go `archive/zip`, CPython `zipfile`, 7-Zip, lean-zip's own
-    -- `create` at [Zip/Archive.lean:189](/home/kim/lean-zip/Zip/Archive.lean:189)
+    -- `create` at Archive/Zip.lean:189
     -- which emits `Checksum.crc32` + deflate/stored payload) obeys.
     -- This is the third column of the per-entry mathematical-invariant
     -- family at CD parse: the sibling stored-method guard above catches

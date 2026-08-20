@@ -635,7 +635,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- `Entry.crc32` verbatim — callers routing on `entry.crc32` saw the
   -- smuggled value) and `Archive.extract` (pre-PR caught the mismatch
   -- only post-extraction via the `"CRC32 mismatch"` guard at
-  -- Zip/Archive.lean:1224, after any I/O work had been performed)
+  -- Archive/Zip.lean:1224, after any I/O work had been performed)
   -- dimensions simultaneously.  Sibling of PR #1773 (stored-method
   -- size invariant) at the CD-parse mathematical-invariant family:
   -- #1773 closes the `compSize == uncompSize` column; this fixture
@@ -701,7 +701,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- with the unsafe `path = "../evil.txt"` verbatim (exposing the
   -- full smuggled form to callers that route on `entry.path` before
   -- any filesystem I/O).  The extract-time `Binary.isPathSafe` calls
-  -- at Zip/Archive.lean:1269 / :1273 remain in place as defense-in-
+  -- at Archive/Zip.lean:1269 / :1273 remain in place as defense-in-
   -- depth but are now unreachable for CD-parseable archives via the
   -- public API.  LH and CD name bytes match byte-for-byte, keeping
   -- the CD/LH name-bytes consistency invariant (issue #1722) intact.
@@ -800,7 +800,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- `compSize == uncompSize`, etc.) and `assertSpanInFile` /
   -- `readBoundedSpanFromHandle` clear the LH span (30 B at offset 0 ≤
   -- fileSize 122).  The 4-byte mismatch trips the late LH-signature
-  -- guard at [Zip/Archive.lean:1106](/home/kim/lean-zip/Zip/Archive.lean:1106)
+  -- guard at Archive/Zip.lean:1106
   -- — *"bad local header signature for {label}"* — which is
   -- `Archive.extract`'s defense-in-depth catch for archives that slip
   -- past every CD-parse and span guard.  `Archive.list` never reads the
@@ -832,7 +832,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   --           = 45 + 46 + 9 + 0 + 16 = 116` — strictly past
   -- `cdEnd = cdOffset + cdSize = 45 + 55 = 100`, so the per-entry
   -- footprint guard at
-  -- [Zip/Archive.lean:615](/home/kim/lean-zip/Zip/Archive.lean:615)
+  -- Archive/Zip.lean:615
   -- — `"central directory entry extends past end of central directory"`
   -- — fires.  All earlier CD-parse guards pass: the loop entry
   -- condition `pos + 46 ≤ cdEnd` (91 ≤ 100) holds, the CD signature
@@ -841,7 +841,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- fixture is regression coverage for an existing guard — no new
   -- code in `parseCentralDir` lands with it.  Companion to the
   -- in-flight `cd-trailing-garbage.zip` (issue #1775, trailing bytes
-  -- AFTER the last entry inside `[lastEntryEnd, cdEnd)`) and
+  -- AFTER the last entry inside `lastEntryEnd, cdEnd)`) and
   -- `cd-extends-past-eocd.zip` (issue #1799, archive-level
   -- `cdOffset + cdSize ≤ eocdPos`): the trio closes the three
   -- CD-region overrun shapes — per-entry footprint past `cdEnd`,
@@ -893,7 +893,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- §4.3.16 sentinel `0xFFFFFFFF`.  The ZIP64 record supplies
   -- `cdSize=55` (the actual CD length), so the reader's "sentinel or
   -- numeric match" check fires on the `cdSize` slot at
-  -- [Zip/Archive.lean:396](/home/kim/lean-zip/Zip/Archive.lean:396)
+  -- [Archive/Zip.lean:396
   -- — the standard value is neither the sentinel nor numerically
   -- equal to the ZIP64 override.  All other slots remain at their
   -- sentinels so the relaxed sentinel arm passes for the `cdOffset`
@@ -918,7 +918,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- APPNOTE §4.3.16 sentinel `0xFFFF`.  The ZIP64 record supplies
   -- `totalEntries=1` (the actual entry count), so the reader's
   -- "sentinel or numeric match" check fires on the `totalEntries`
-  -- slot at [Zip/Archive.lean:402](/home/kim/lean-zip/Zip/Archive.lean:402)
+  -- slot at Archive/Zip.lean:402
   -- — the standard value is neither the sentinel nor numerically
   -- equal to the ZIP64 override.  All other slots remain at their
   -- sentinels so the relaxed sentinel arm passes for the `cdSize`
@@ -950,7 +950,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- `diskWhereCDStarts=0` (the actual single-disk archive's CD-disk
   -- number), so the reader's "sentinel or numeric match" check fires
   -- on the `diskWhereCDStarts` slot at
-  -- [Zip/Archive.lean:408](/home/kim/lean-zip/Zip/Archive.lean:408)
+  -- Archive/Zip.lean:408
   -- — the standard value is neither the sentinel nor numerically
   -- equal to the ZIP64 override.  All other slots remain at their
   -- sentinels so the relaxed sentinel arm passes for the `cdSize`
@@ -968,7 +968,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- disk M", letting an attacker present two different archives to
   -- two different parsers from the same byte sequence.  The downstream
   -- EOCD-level disk-number sanity check at
-  -- [Zip/Archive.lean:521](/home/kim/lean-zip/Zip/Archive.lean:521)
+  -- Archive/Zip.lean:521
   -- (`numberOfThisDisk == 0 && diskWhereCDStarts == 0`) cannot be
   -- reached when the ZIP64-override sub-check at line 408 fires first;
   -- this fixture exercises the upstream override-mismatch arm
@@ -990,7 +990,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- `numEntriesThisDisk=1` (the actual single-disk archive's per-disk
   -- entry count), so the reader's "sentinel or numeric match" check
   -- fires on the `numEntriesThisDisk` slot at
-  -- [Zip/Archive.lean:411](/home/kim/lean-zip/Zip/Archive.lean:411)
+  -- Archive/Zip.lean:411
   -- — the standard value is neither the sentinel nor numerically
   -- equal to the ZIP64 override.  All other slots remain at their
   -- sentinels so the relaxed sentinel arm passes for the `cdSize`
@@ -1009,7 +1009,7 @@ def ArchiveTest.ZipFixtures.tests : IO Unit := do
   -- (PR #1752): the same field name appears in two distinct guards
   -- (the override-arm at line 411 compares the standard EOCD against
   -- the ZIP64 record; the internal-consistency arm at
-  -- [Zip/Archive.lean:531](/home/kim/lean-zip/Zip/Archive.lean:531)
+  -- Archive/Zip.lean:531
   -- compares the post-override resolved values), and this fixture
   -- pins the override-arm specifically.  The standard EOCD's
   -- `totalEntries` stays at the `0xFFFF` sentinel so the line-402

@@ -275,7 +275,7 @@ write_fixture(
 # lean-zip does not implement strong encryption and so cannot consume
 # v2 EOCD64 records; the existing record-size guard
 # (`unless recSize == 44` at
-# [Archive/Zip.lean:343](/home/kim/lean-zip/Archive/Zip.lean:343))
+# Archive/Zip.lean:343)
 # rejects them by falling outside the v1-only `44` expectation.  This
 # fixture is an *internally-consistent* v2-shape probe: the claimed
 # `recSize=60` matches the 72-byte physical record layout

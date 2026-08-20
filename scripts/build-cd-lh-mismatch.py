@@ -637,7 +637,7 @@ write(
 #            = 45 + 46 + 9 + 0 + 16 = 116` — strictly past
 # `cdEnd = cdOffset + cdSize = 45 + 55 = 100`.  `parseCentralDir`
 # rejects with `"central directory entry extends past end of central
-# directory"` at [Archive/Zip.lean:615](/home/kim/lean-zip/Archive/Zip.lean:615) —
+# directory"` at Archive/Zip.lean:615 —
 # the per-entry footprint guard.  All earlier CD-parse guards pass: the
 # loop entry condition `pos + 46 ≤ cdEnd` (91 ≤ 100) holds, the CD
 # signature matches, `nameLen=9 > 0`, `diskNumberStart=0`,
