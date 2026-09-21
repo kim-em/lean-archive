@@ -92,11 +92,11 @@ package «lean-archive» where
   moreLinkArgs := run_io do return (← zlibLinkFlags) ++ (← ltoLinkFlags)
   testDriver := "test"
 
-require «lean-zip» from git "https://github.com/kim-em/lean-zip" @ "86fde8b18886f97d2c77dab2ba6d033bbbdfbb3a"
+require «lean-zip» from git "https://github.com/kim-em/lean-zip" @ "ac1b7c51ff91b1d015a2f1dc616df19bde5e8865"
 
-require «lean-zlib» from git "https://github.com/kim-em/lean-zlib" @ "1a79d2d7713e55d98084f4ed92fd44263aab133c"
+require «lean-zlib» from git "https://github.com/kim-em/lean-zlib" @ "a606785a8685df084356e075996c9b161e937626"
 
-require zipCommon from git "https://github.com/kim-em/lean-zip-common" @ "4425bab1f9522307d77e8d485bc536149ba31c36"
+require zipCommon from git "https://github.com/kim-em/lean-zip-common" @ "086d1983eab397105c2340cae80e325fd2d40231"
 
 lean_lib Archive
 
