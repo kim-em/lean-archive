@@ -954,7 +954,7 @@ private theorem assertSpanInFile_eq_pure_of_spanInFile
     assertSpanInFile fileSize offset length what = pure () := by
   obtain ⟨h1, h2⟩ := h
   unfold assertSpanInFile
-  rw [if_neg (UInt64.not_lt.mpr h1), if_neg (UInt64.not_lt.mpr h2)]
+  rw [ite_eq_right (UInt64.not_lt.mpr h1), ite_eq_right (UInt64.not_lt.mpr h2)]
 
 /-- Backward reduction: success of `assertSpanInFile` implies the pure
     predicate `SpanInFile` holds. For each guard, contraposition reduces
@@ -967,12 +967,12 @@ private theorem spanInFile_of_assertSpanInFile_succeeds
   have h1 : offset ≤ fileSize := by
     refine Decidable.by_contra fun h1 => ?_
     unfold assertSpanInFile at h
-    rw [if_pos (UInt64.not_le.mp h1)] at h
+    rw [ite_eq_left (UInt64.not_le.mp h1)] at h
     exact io_ne_pure_of_state_error (e := _) (fun _ => rfl) h
   refine ⟨h1, ?_⟩
   refine Decidable.by_contra fun h2 => ?_
   unfold assertSpanInFile at h
-  rw [if_neg (UInt64.not_lt.mpr h1), if_pos (UInt64.not_le.mp h2)] at h
+  rw [ite_eq_right (UInt64.not_lt.mpr h1), ite_eq_left (UInt64.not_le.mp h2)] at h
   exact io_ne_pure_of_state_error (e := _) (fun _ => rfl) h
 
 /-- `Nat`-level consequence of `SpanInFile`: the end-offset of the span is
